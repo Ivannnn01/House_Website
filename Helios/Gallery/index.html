@@ -1,1 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helios Gallery </title>
+    <link href="style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="top-banner">
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="https://ivannnn01.github.io/Helios_Website/">Main Homepage</a>
+                <a href="https://ivannnn01.github.io/Helios_Website/game">Play Game</a>
+            </div>
+        </div>
+        <div class="banner-title">GALLERY</div>
+    </header>
 
+    <main class="gallery-container" id="galleryContainer">
+        <div class="polaroid-track">
+            <div class="polaroid">
+                <img src="House_Captains.jpg" alt="Photo 1">
+                <p class="caption"> House Captains </p>
+            </div>
+            <div class="polaroid">
+                <img src="House_Mascot.JPG" alt="Photo 2">
+                <p class="caption"> PYRO </p>
+            </div>
+            <div class="polaroid">
+                <img src="2026%20CAs.JPG" alt="Photo 3">
+                <p class="caption"> Helios CAs </p>
+            </div>
+            <div class="polaroid">
+                <img src="Num1.jpg" alt="Photo 4">
+                <p class="caption"></p>
+            </div>
+            <div class="polaroid">
+                <img src="Num2.JPG" alt="Photo 5">
+                <p class="caption"></p>
+            </div>
+            <div class="polaroid">
+                <img src="Helios_Artemis.jpg" alt="Photo 3">
+                <p class="caption">  </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleDropdown() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        let currentIndex = 0;
+        const polaroids = document.querySelectorAll('.polaroid');
+        const total = polaroids.length;
+        const container = document.getElementById('galleryContainer');
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+
+        function initRandomTilt() {
+            polaroids.forEach(p => {
+
+                const randomRotate = (Math.random() * 6 - 3).toFixed(2);
+                p.style.setProperty('--random-tilt', `${randomRotate}deg`);
+            });
+        }
+
+        function updateGallery() {
+            polaroids.forEach((p, index) => {
+                p.classList.remove('active', 'prev', 'next', 'far-left', 'far-right');
+
+                let offset = index - currentIndex;
+                if (offset > total / 2) offset -= total;
+                if (offset < -total / 2) offset += total;
+
+                if (offset === 0) {
+                    p.classList.add('active');
+                } else if (offset === -1) {
+                    p.classList.add('prev');
+                } else if (offset === 1) {
+                    p.classList.add('next');
+                } else if (offset < -1) {
+                    p.classList.add('far-left');
+                } else if (offset > 1) {
+                    p.classList.add('far-right');
+                }
+            });
+        }
+
+        function moveSlide(direction) {
+            currentIndex = (currentIndex + direction + total) % total;
+            updateGallery();
+        }
+
+        container.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        container.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            const swipeThreshold = 40;
+            if (touchStartX - touchEndX > swipeThreshold) moveSlide(1);
+            if (touchEndX - touchStartX > swipeThreshold) moveSlide(-1);
+        }, {passive: true});
+
+        initRandomTilt();
+        updateGallery();
+    </script>
+</body>
+</html>
