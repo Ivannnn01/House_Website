@@ -8,14 +8,6 @@ body, html {
 }
 
 .quadrant-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    height: 100vh;
-    width: 100vw;
-}
-
-.quadrant-container {
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -30,7 +22,7 @@ body, html {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100px;
-    height: 100px;
+    height: 100px; 
     background-color: white; 
     border-radius: 50%;
     border: 4px solid #333;
@@ -40,12 +32,21 @@ body, html {
     justify-content: center;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    z-index: 10;
+    z-index: 10; /* Keeps it above the quadrants */
 }
 
 .center-circle img {
     width: 100%;
     height: 100%;
+}
+
+.quadrant {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    text-decoration: none;
+    border: 1px solid #ddd;
+    transition: background-color 0.3s ease;
 }
 
 
