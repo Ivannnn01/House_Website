@@ -56,11 +56,6 @@ function spawnTarget() {
 }
 
 function startTheGame() {
-    if(imagesLoaded < 2) {
-        console.log("Still loading images...");
-        return;
-    }
-    console.log("Game Starting...");
     document.getElementById("startMenu").style.display = "none";
     init();
     gameActive = true;
