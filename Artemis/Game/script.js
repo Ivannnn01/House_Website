@@ -5,13 +5,22 @@ let w, h, score, arrows, lives, gameActive = false;
 let targets = [];
 let activeArrows = [];
 
-
+let imagesLoaded = 0;
 const targetImg = new Image();
 targetImg.src = 'target.png';
 const wolfImg = new Image();
 wolfImg.src = 'wolf.png';
 const bowImg = new Image();
-bowImg.src = 'bow.png'; //
+bowImg.src = 'bow.png';
+
+
+const checkImages = () => {
+    imagesLoaded++;
+    if(imagesLoaded === 2) {
+        startBtn.innerText = "START HUNT";
+        startBtn.style.background = "#f1c40f";
+    }
+};
 
 const startBtn = document.getElementById("startBtn");
 
@@ -56,6 +65,10 @@ function spawnTarget() {
 }
 
 function startTheGame() {
+    if(imagesLoaded < 2) {
+    console.log("Still loading images...");
+    return;
+    }
     document.getElementById("startMenu").style.display = "none";
     init();
     gameActive = true;
