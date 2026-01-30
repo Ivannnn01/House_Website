@@ -30,13 +30,15 @@ obstacleImg.src = "Storm_Cloud.png";
 const coinImg = new Image();
 coinImg.src = "Solar_Coin.png";
 
-let gamespeed = 7;
+// --- Game State ---
+let gamespeed = 400; // Pixels per second (adjusted for delta time)
 let bgY = 0;
 let score = 0;
 let obstacles = [];
 let coins = [];
 let spawnTimer = 0;
 let lives = 3;
+let lastTime = 0;
 
 const player = {
     lane: 1,
@@ -51,30 +53,31 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- NEW SWIPE LOGIC ---
+// --- SANITIZED INPUT LOGIC ---
+// This prevents "Ghost Clicks" and long-press zoom issues
 let touchStartX = 0;
-const minSwipeDistance = 30; // pixels needed to trigger a move
 
 window.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
 }, { passive: false });
 
 window.addEventListener("touchend", (e) => {
-    let touchEndX = e.changedTouches[0].screenX;
-    let distance = touchEndX - touchStartX;
-
-    if (Math.abs(distance) > minSwipeDistance) {
-        if (distance > 0) movePlayer("right");
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchEndX - touchStartX;
+    
+    if (Math.abs(diff) > 30) { // Swipe threshold
+        if (diff > 0) movePlayer("right");
         else movePlayer("left");
     }
+    e.preventDefault(); // Stop the "ghost" click from firing
 }, { passive: false });
 
-// Prevent scrolling/bouncing while playing
-window.addEventListener("touchmove", (e) => {
+// Block all context menus (the popup when you hold down)
+window.oncontextmenu = (e) => {
     e.preventDefault();
-}, { passive: false });
+    return false;
+};
 
-// Keep keyboard support for desktop
 window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") movePlayer("left");
     if (e.key === "ArrowRight") movePlayer("right");
@@ -92,7 +95,6 @@ function resetGame() {
     obstacles = [];
     coins = [];
     player.lane = 1;
-    gamespeed = 7;
     lives = 3;
 }
 
@@ -103,9 +105,9 @@ function getLaneX(laneIndex, objWidth) {
     return pathStart + (laneIndex * laneWidth) + (laneWidth / 2) - (objWidth / 2);
 }
 
-function spawn() {
-    spawnTimer++;
-    if (spawnTimer > 60) {
+function spawn(dt) {
+    spawnTimer += dt;
+    if (spawnTimer > 1.0) { // Spawn every 1 second
         const lane = Math.floor(Math.random() * 3);
         if (Math.random() < 0.7) {
             const x = getLaneX(lane, 60);
@@ -118,30 +120,30 @@ function spawn() {
     }
 }
 
-function update() {
-    bgY = (bgY + gamespeed) % drawHeight;
+function update(dt) {
+    // Movement is now calculated: speed * delta_time
+    bgY = (bgY + gamespeed * dt) % drawHeight;
+
     player.y = canvas.height - 150;
     let targetX = getLaneX(player.lane, player.width);
-    player.x += (targetX - player.x) * 0.2;
+    // Smooth lerp for player movement
+    player.x += (targetX - player.x) * 0.15;
 
-    spawn();
+    spawn(dt);
 
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
-        obs.y += gamespeed;
+        obs.y += gamespeed * dt;
         if (checkCollision(player, obs)) {
             lives--;
             obstacles.splice(i, 1);
-            if (lives <= 0) { 
-                alert("Game Over! Score: " + score); 
-                resetGame(); 
-            }
+            if (lives <= 0) { alert("Game Over! Score: " + score); resetGame(); }
         } else if (obs.y > canvas.height) { obstacles.splice(i, 1); }
     }
 
     for (let i = coins.length - 1; i >= 0; i--) {
         let coin = coins[i];
-        coin.y += gamespeed;
+        coin.y += gamespeed * dt;
         if (checkCollision(player, coin)) {
             score += 10;
             coins.splice(i, 1);
@@ -151,8 +153,8 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
 
+    const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
     for (let i = -1; i < tilesNeeded; i++) {
         ctx.drawImage(
             pathimage, 
@@ -173,13 +175,21 @@ function draw() {
     ctx.fillText("Lives: " + lives, 20, 70);
 }
 
-function gameLoop() {
-    update();
+function gameLoop(timestamp) {
+    // Calculate Delta Time (seconds since last frame)
+    let dt = (timestamp - lastTime) / 1000;
+    if (dt > 0.1) dt = 0.1; // Cap dt to prevent huge jumps after pauses
+    lastTime = timestamp;
+
+    update(dt);
     draw();
     requestAnimationFrame(gameLoop);
 }
 
 pathimage.onload = () => {
     resize();
-    gameLoop();
+    requestAnimationFrame((timestamp) => {
+        lastTime = timestamp;
+        gameLoop(timestamp);
+    });
 };
