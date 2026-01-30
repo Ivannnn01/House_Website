@@ -51,19 +51,32 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- FIXED BUTTON LOGIC ---
+// --- FULLY SANITIZED BUTTON LOGIC ---
 const setupBtn = (id, direction) => {
     const el = document.getElementById(id);
     if (!el) return;
     
+    // Block the long-press context menu
+    el.oncontextmenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
+
     const handleAction = (e) => {
-        e.preventDefault(); // Stops the "double trigger" on mobile
+        e.preventDefault();
         e.stopPropagation();
         movePlayer(direction);
     };
 
+    // Use only touchstart for mobile, mousedown for desktop
     el.addEventListener("touchstart", handleAction, {passive: false});
-    el.addEventListener("mousedown", handleAction);
+    el.addEventListener("mousedown", (e) => {
+        // Only trigger if it's not a touch event (prevents double fire)
+        if (e.detail !== 0) { 
+            handleAction(e);
+        }
+    });
 };
 
 setupBtn("leftBtn", "left");
@@ -113,8 +126,8 @@ function spawn() {
 }
 
 function update() {
-    bgY += gamespeed;
-    if (bgY >= drawHeight) bgY = 0;
+    // Increment bgY and wrap it within the drawHeight bounds
+    bgY = (bgY + gamespeed) % drawHeight;
 
     player.y = canvas.height - 150;
     let targetX = getLaneX(player.lane, player.width);
@@ -145,14 +158,16 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // --- TILED BACKGROUND WITH OVERLAP FIX ---
-    for (let i = -1; i < Math.ceil(canvas.height / drawHeight) + 1; i++) {
+    // Calculate how many tiles we need to fill the height plus overhead
+    const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
+
+    for (let i = -1; i < tilesNeeded; i++) {
         ctx.drawImage(
             pathimage, 
             offsetX, 
-            Math.floor(bgY + (i * drawHeight)), // Math.floor helps with sub-pixel jitter
+            Math.floor(bgY + (i * drawHeight)), 
             drawWidth, 
-            drawHeight + 1 // +1 creates a tiny overlap to hide the seam
+            drawHeight + 1 
         );
     }
 
