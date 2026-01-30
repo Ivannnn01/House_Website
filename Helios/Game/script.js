@@ -46,8 +46,8 @@ const player = {
     lane: 1,
     x: 0,
     y: 0,
-    width: 80, // Set your desired width here
-    height: 0  // Calculated automatically to prevent compression
+    width: 80,
+    height: 0
 };
 
 function movePlayer(direction) {
@@ -55,7 +55,7 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- CLEAN INPUT LOGIC (NO BUTTONS) ---
+
 let touchStartX = 0;
 window.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
@@ -80,7 +80,7 @@ window.addEventListener("keydown", (e) => {
 
 // --- COLLISION ---
 function checkCollision(playerRect, objRect, isObstacle) {
-    const playerPadding = 60; 
+    const playerPadding = 40; 
     
     // How many pixels to ignore from the obstacle's edges (already have this)
     const objPadding = isObstacle ? 15 : 0; 
@@ -139,7 +139,7 @@ function update(dt) {
     bgY = (bgY + gamespeed * dt) % drawHeight;
     player.y = canvas.height - (player.height + 50); 
     let targetX = getLaneX(player.lane, player.width);
-    player.x += (targetX - player.x) * 0.15;
+    player.x += (targetX - player.x) * 0.35;
 
     spawn(dt);
 
@@ -197,5 +197,6 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
 
 
