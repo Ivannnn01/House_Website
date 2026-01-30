@@ -80,11 +80,15 @@ window.addEventListener("keydown", (e) => {
 
 // --- COLLISION ---
 function checkCollision(playerRect, objRect, isObstacle) {
-    const padding = isObstacle ? 15 : 0; 
-    return playerRect.x < (objRect.x + objRect.width - padding) &&
-           (playerRect.x + playerRect.width) > (objRect.x + padding) &&
-           playerRect.y < (objRect.y + objRect.height - padding) &&
-           (playerRect.y + playerRect.height) > (objRect.y + padding);
+    const playerPadding = 40; 
+    
+    // How many pixels to ignore from the obstacle's edges (already have this)
+    const objPadding = isObstacle ? 15 : 0; 
+    
+    return (playerRect.x + playerPadding) < (objRect.x + objRect.width - objPadding) &&
+           (playerRect.x + playerRect.width - playerPadding) > (objRect.x + objPadding) &&
+           (playerRect.y + playerPadding) < (objRect.y + objRect.height - objPadding) &&
+           (playerRect.y + playerRect.height - playerPadding) > (objRect.y + objPadding);
 }
 
 function resetGame() {
@@ -193,3 +197,4 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
