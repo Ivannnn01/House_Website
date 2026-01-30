@@ -5,22 +5,33 @@ let w, h, score, arrows, lives, gameActive = false;
 let targets = [];
 let activeArrows = [];
 
-let imagesLoaded = 0;
-const targetImg = new Image();
-targetImg.src = 'target.png';
-const wolfImg = new Image();
-wolfImg.src = 'wolf.png';
-const bowImg = new Image();
-bowImg.src = 'bow.png';
+// MISSING VARIABLES FIXED: Track last input for bow rotation
+let lastInputX = window.innerWidth / 2;
+let lastInputY = 0;
 
+let imagesLoaded = 0;
+const totalImages = 3; // target, wolf, bow
 
 const checkImages = () => {
     imagesLoaded++;
-    if(imagesLoaded === 2) {
+    if(imagesLoaded === totalImages) {
         startBtn.innerText = "START HUNT";
         startBtn.style.background = "#f1c40f";
+        startBtn.style.color = "#000";
     }
 };
+
+const targetImg = new Image();
+targetImg.onload = checkImages;
+targetImg.src = 'target.png';
+
+const wolfImg = new Image();
+wolfImg.onload = checkImages;
+wolfImg.src = 'wolf.png';
+
+const bowImg = new Image();
+bowImg.onload = checkImages;
+bowImg.src = 'bow.png';
 
 const startBtn = document.getElementById("startBtn");
 
@@ -29,8 +40,11 @@ function init() {
     h = window.innerHeight;
     canvas.width = w;
     canvas.height = h;
-    score = 0; arrows = 10; lives = 3;
-    targets = []; activeArrows = [];
+    score = 0; 
+    arrows = 10; 
+    lives = 3;
+    targets = []; 
+    activeArrows = [];
     updateUI();
     for(let i=0; i < 4; i++) spawnTarget();
 }
@@ -65,9 +79,9 @@ function spawnTarget() {
 }
 
 function startTheGame() {
-    if(imagesLoaded < 2) {
-    console.log("Still loading images...");
-    return;
+    if(imagesLoaded < totalImages) {
+        console.log("Still loading images...");
+        return;
     }
     document.getElementById("startMenu").style.display = "none";
     init();
@@ -75,15 +89,15 @@ function startTheGame() {
     requestAnimationFrame(gameLoop);
 }
 
-
 startBtn.addEventListener("click", startTheGame);
-startBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault(); 
-    startTheGame();
-}, {passive: false});
 
 function shoot(clientX, clientY) {
     if (!gameActive || arrows <= 0) return;
+    
+
+    arrows--; 
+    updateUI();
+
     const bowX = w / 2;
     const bowY = h - 80;
     const angle = Math.atan2(clientY - bowY, clientX - bowX);
@@ -91,15 +105,29 @@ function shoot(clientX, clientY) {
 }
 
 
+window.addEventListener("mousemove", (e) => {
+    lastInputX = e.clientX;
+    lastInputY = e.clientY;
+});
+
 window.addEventListener("mousedown", (e) => {
     if(gameActive) shoot(e.clientX, e.clientY);
 });
+
 window.addEventListener("touchstart", (e) => {
+    lastInputX = e.touches[0].clientX;
+    lastInputY = e.touches[0].clientY;
     if(gameActive) {
-        shoot(e.touches[0].clientX, e.touches[0].clientY);
-        e.preventDefault(); 
+        shoot(lastInputX, lastInputY);
     }
 }, {passive: false});
+
+window.addEventListener("touchmove", (e) => {
+    lastInputX = e.touches[0].clientX;
+    lastInputY = e.touches[0].clientY;
+    if(gameActive) e.preventDefault(); 
+}, {passive: false});
+
 
 function gameLoop() {
     if (!gameActive) return;
@@ -108,17 +136,17 @@ function gameLoop() {
     const bowX = w / 2;
     const bowY = h - 80;
     
+
     let aimAngle = Math.atan2(lastInputY - bowY, lastInputX - bowX);
     
+
     ctx.save();
     ctx.translate(bowX, bowY);
     ctx.rotate(aimAngle + Math.PI / 2); 
     try {
-
         ctx.drawImage(bowImg, -40, -40, 80, 80); 
     } catch(e) {}
     ctx.restore();
-
 
     for (let i = targets.length - 1; i >= 0; i--) {
         let t = targets[i];
@@ -128,7 +156,6 @@ function gameLoop() {
         if (t.x < -100) t.x = w + 100;
 
         const img = t.isWolf ? wolfImg : targetImg;
-
         try {
             ctx.drawImage(img, t.x - t.radius, t.y - t.radius, t.radius*2, t.radius*2);
         } catch(e) {}
@@ -153,8 +180,11 @@ function gameLoop() {
             let dist = Math.hypot(a.x - t.x, a.y - t.y);
 
             if (dist < t.radius) {
-                if (t.isWolf) lives--;
-                else score += 10;
+                if (t.isWolf) {
+                    lives--;
+                } else {
+                    score += 10;
+                }
                 
                 updateUI();
                 targets.splice(j, 1);
@@ -165,14 +195,14 @@ function gameLoop() {
             }
         }
 
+
         if (!hit && (a.x > w || a.x < 0 || a.y < 0 || a.y > h)) {
             activeArrows.splice(i, 1);
-            arrows--;
-            updateUI();
         }
     }
 
-    if (lives <= 0 || arrows <= 0) {
+
+    if (lives <= 0 || (arrows <= 0 && activeArrows.length === 0)) {
         gameActive = false;
         setTimeout(() => {
             alert(`GAME OVER\nScore: ${score}`);
