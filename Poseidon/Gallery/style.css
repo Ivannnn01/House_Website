@@ -17,7 +17,7 @@ body {
     top: 0;
     width: 100%;
     height: var(--header-height);
-    background-color: red;
+    background-color: #08355c;
     display: flex;
     align-items: center;
     padding: 0 20px;
