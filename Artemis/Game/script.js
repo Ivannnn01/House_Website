@@ -14,19 +14,6 @@ wolfImg.src = 'wolf.png';
 
 const startBtn = document.getElementById("startBtn");
 
-const checkImages = () => {
-    imagesLoaded++;
-    if(imagesLoaded === 2) {
-        startBtn.innerText = "START HUNT";
-        startBtn.style.background = "#f1c40f"; // Change color when ready
-    }
-};
-
-targetImg.onload = checkImages;
-wolfImg.onload = checkImages;
-targetImg.onerror = () => console.error("target.png missing");
-wolfImg.onerror = () => console.error("wolf.png missing");
-
 function init() {
     w = window.innerWidth;
     h = window.innerHeight;
@@ -45,7 +32,18 @@ function updateUI() {
 }
 
 function spawnTarget() {
-    const isWolf = Math.random() < 0.25; 
+    let isWolf;
+    const wolfCount = targets.filter(t => t.isWolf).length;
+    const targetCount = targets.filter(t => !t.isWolf).length;
+
+    if (wolfCount === 0 && targets.length > 0) {
+        isWolf = true;
+    } else if (targetCount === 0 && targets.length > 0) {
+        isWolf = false;
+    } else {
+        isWolf = Math.random() < 0.25; 
+    }
+
     const direction = Math.random() < 0.5 ? 1 : -1;
     targets.push({
         x: direction === 1 ? -60 : w + 60,
@@ -55,7 +53,6 @@ function spawnTarget() {
         speedX: (2 + Math.random() * 2.5) * direction
     });
 }
-
 // BULLETPROOF START FUNCTION
 function startTheGame() {
     if(imagesLoaded < 2) {
