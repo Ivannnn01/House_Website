@@ -31,9 +31,11 @@ const coinImg = new Image();
 coinImg.src = "Solar_Coin.png";
 
 // --- Game State ---
-let gamespeed = 400; // Pixels per second (adjusted for delta time)
+let baseSpeed = 400; 
+let gamespeed = 400; 
 let bgY = 0;
 let score = 0;
+let lastMilestone = 0; // Tracks the last 50-point boost
 let obstacles = [];
 let coins = [];
 let spawnTimer = 0;
@@ -53,10 +55,8 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- SANITIZED INPUT LOGIC ---
-// This prevents "Ghost Clicks" and long-press zoom issues
+// --- INPUT LOGIC ---
 let touchStartX = 0;
-
 window.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
 }, { passive: false });
@@ -64,34 +64,36 @@ window.addEventListener("touchstart", (e) => {
 window.addEventListener("touchend", (e) => {
     const touchEndX = e.changedTouches[0].screenX;
     const diff = touchEndX - touchStartX;
-    
-    if (Math.abs(diff) > 30) { // Swipe threshold
+    if (Math.abs(diff) > 30) {
         if (diff > 0) movePlayer("right");
         else movePlayer("left");
     }
-    e.preventDefault(); // Stop the "ghost" click from firing
+    e.preventDefault();
 }, { passive: false });
 
-// Block all context menus (the popup when you hold down)
-window.oncontextmenu = (e) => {
-    e.preventDefault();
-    return false;
-};
+window.oncontextmenu = (e) => { e.preventDefault(); return false; };
 
 window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") movePlayer("left");
     if (e.key === "ArrowRight") movePlayer("right");
 });
 
-function checkCollision(rect1, rect2) {
-    return rect1.x < rect2.x + rect2.width &&
-           rect1.x + rect1.width > rect2.x &&
-           rect1.y < rect2.y + rect2.height &&
-           rect1.y + rect1.height > rect2.y;
+// --- REFINED COLLISION LOGIC ---
+function checkCollision(playerRect, objRect, isObstacle) {
+    // If it's an obstacle, we shrink the hitbox by 15 pixels on all sides
+    // This makes the "Storm Cloud" feel like you actually have to touch the center
+    const padding = isObstacle ? 15 : 0; 
+    
+    return playerRect.x < (objRect.x + objRect.width - padding) &&
+           (playerRect.x + playerRect.width) > (objRect.x + padding) &&
+           playerRect.y < (objRect.y + objRect.height - padding) &&
+           (playerRect.y + playerRect.height) > (objRect.y + padding);
 }
 
 function resetGame() {
     score = 0;
+    lastMilestone = 0;
+    gamespeed = baseSpeed;
     obstacles = [];
     coins = [];
     player.lane = 1;
@@ -107,7 +109,9 @@ function getLaneX(laneIndex, objWidth) {
 
 function spawn(dt) {
     spawnTimer += dt;
-    if (spawnTimer > 1.0) { // Spawn every 1 second
+    // Spawning frequency also slightly increases as speed increases
+    const spawnRate = Math.max(0.4, 1.0 - (score / 500)); 
+    if (spawnTimer > spawnRate) {
         const lane = Math.floor(Math.random() * 3);
         if (Math.random() < 0.7) {
             const x = getLaneX(lane, 60);
@@ -121,12 +125,17 @@ function spawn(dt) {
 }
 
 function update(dt) {
-    // Movement is now calculated: speed * delta_time
-    bgY = (bgY + gamespeed * dt) % drawHeight;
+    // Check for speed boost every 50 points
+    let currentMilestone = Math.floor(score / 50);
+    if (currentMilestone > lastMilestone) {
+        gamespeed *= 1.10; // Add 10%
+        lastMilestone = currentMilestone;
+        console.log("Speed increased! New Speed:", gamespeed);
+    }
 
+    bgY = (bgY + gamespeed * dt) % drawHeight;
     player.y = canvas.height - 150;
     let targetX = getLaneX(player.lane, player.width);
-    // Smooth lerp for player movement
     player.x += (targetX - player.x) * 0.15;
 
     spawn(dt);
@@ -134,7 +143,7 @@ function update(dt) {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.y += gamespeed * dt;
-        if (checkCollision(player, obs)) {
+        if (checkCollision(player, obs, true)) {
             lives--;
             obstacles.splice(i, 1);
             if (lives <= 0) { alert("Game Over! Score: " + score); resetGame(); }
@@ -144,7 +153,7 @@ function update(dt) {
     for (let i = coins.length - 1; i >= 0; i--) {
         let coin = coins[i];
         coin.y += gamespeed * dt;
-        if (checkCollision(player, coin)) {
+        if (checkCollision(player, coin, false)) {
             score += 10;
             coins.splice(i, 1);
         } else if (coin.y > canvas.height) { coins.splice(i, 1); }
@@ -153,16 +162,9 @@ function update(dt) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
     for (let i = -1; i < tilesNeeded; i++) {
-        ctx.drawImage(
-            pathimage, 
-            offsetX, 
-            Math.floor(bgY + (i * drawHeight)), 
-            drawWidth, 
-            drawHeight + 1 
-        );
+        ctx.drawImage(pathimage, offsetX, Math.floor(bgY + (i * drawHeight)), drawWidth, drawHeight + 1);
     }
 
     obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
@@ -173,14 +175,14 @@ function draw() {
     ctx.font = "bold 20px Arial";
     ctx.fillText("Score: " + score, 20, 40);
     ctx.fillText("Lives: " + lives, 20, 70);
+    ctx.font = "14px Arial";
+    ctx.fillText("Speed: " + Math.round((gamespeed / baseSpeed) * 100) + "%", 20, 100);
 }
 
 function gameLoop(timestamp) {
-    // Calculate Delta Time (seconds since last frame)
     let dt = (timestamp - lastTime) / 1000;
-    if (dt > 0.1) dt = 0.1; // Cap dt to prevent huge jumps after pauses
+    if (dt > 0.1) dt = 0.1;
     lastTime = timestamp;
-
     update(dt);
     draw();
     requestAnimationFrame(gameLoop);
