@@ -64,7 +64,7 @@ window.addEventListener("touchstart", (e) => {
 window.addEventListener("touchend", (e) => {
     const touchEndX = e.changedTouches[0].screenX;
     const diff = touchEndX - touchStartX;
-    if (Math.abs(diff) > 30) {
+    if (Math.abs(diff) > 15) {
         if (diff > 0) movePlayer("right");
         else movePlayer("left");
     }
@@ -80,7 +80,7 @@ window.addEventListener("keydown", (e) => {
 
 // --- COLLISION ---
 function checkCollision(playerRect, objRect, isObstacle) {
-    const playerPadding = 40; 
+    const playerPadding = 60; 
     
     // How many pixels to ignore from the obstacle's edges (already have this)
     const objPadding = isObstacle ? 15 : 0; 
@@ -197,4 +197,5 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
 
