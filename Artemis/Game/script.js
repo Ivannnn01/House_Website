@@ -12,14 +12,20 @@ targetImg.src = 'target.png';
 const wolfImg = new Image();
 wolfImg.src = 'wolf.png';
 
+const startBtn = document.getElementById("startBtn");
+
 const checkImages = () => {
     imagesLoaded++;
     if(imagesLoaded === 2) {
-        document.getElementById("startBtn").innerText = "START HUNT";
+        startBtn.innerText = "START HUNT";
+        startBtn.style.background = "#f1c40f"; // Change color when ready
     }
 };
+
 targetImg.onload = checkImages;
 wolfImg.onload = checkImages;
+targetImg.onerror = () => console.error("target.png missing");
+wolfImg.onerror = () => console.error("wolf.png missing");
 
 function init() {
     w = window.innerWidth;
@@ -50,13 +56,25 @@ function spawnTarget() {
     });
 }
 
-window.startGame = function() {
-    if(imagesLoaded < 2) return; // Prevent start if images aren't ready
+// BULLETPROOF START FUNCTION
+function startTheGame() {
+    if(imagesLoaded < 2) {
+        console.log("Still loading images...");
+        return;
+    }
+    console.log("Game Starting...");
     document.getElementById("startMenu").style.display = "none";
     init();
     gameActive = true;
     requestAnimationFrame(gameLoop);
-};
+}
+
+// Assign listeners directly to the button element
+startBtn.addEventListener("click", startTheGame);
+startBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault(); // Prevents double-firing on some phones
+    startTheGame();
+}, {passive: false});
 
 function shoot(clientX, clientY) {
     if (!gameActive || arrows <= 0) return;
@@ -66,17 +84,22 @@ function shoot(clientX, clientY) {
     activeArrows.push({ x: bowX, y: bowY, angle: angle, speed: 25 });
 }
 
-window.addEventListener("mousedown", (e) => shoot(e.clientX, e.clientY));
+// Game Input
+window.addEventListener("mousedown", (e) => {
+    if(gameActive) shoot(e.clientX, e.clientY);
+});
 window.addEventListener("touchstart", (e) => {
-    shoot(e.touches[0].clientX, e.touches[0].clientY);
-    e.preventDefault(); 
+    if(gameActive) {
+        shoot(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault(); 
+    }
 }, {passive: false});
 
 function gameLoop() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, w, h);
 
-    // Draw Bow (Flipped upward for portrait)
+    // Draw Bow Station
     ctx.strokeStyle = "white";
     ctx.lineWidth = 8;
     ctx.beginPath();
@@ -88,16 +111,17 @@ function gameLoop() {
         let t = targets[i];
         t.x += t.speedX;
 
-        // Screen wrap
         if (t.x > w + 100) t.x = -100;
         if (t.x < -100) t.x = w + 100;
 
-        // Draw Image
         const img = t.isWolf ? wolfImg : targetImg;
-        ctx.drawImage(img, t.x - t.radius, t.y - t.radius, t.radius*2, t.radius*2);
+        // Use drawImage safely
+        try {
+            ctx.drawImage(img, t.x - t.radius, t.y - t.radius, t.radius*2, t.radius*2);
+        } catch(e) {}
     }
 
-    // Arrow Logic (Ray Movement)
+    // Arrow Logic
     for (let i = activeArrows.length - 1; i >= 0; i--) {
         let a = activeArrows[i];
         a.x += Math.cos(a.angle) * a.speed;
@@ -110,7 +134,6 @@ function gameLoop() {
         ctx.fillRect(0, -2, 40, 4);
         ctx.restore();
 
-        // Collision Check using Distance Formula
         let hit = false;
         for (let j = targets.length - 1; j >= 0; j--) {
             let t = targets[j];
@@ -146,4 +169,3 @@ function gameLoop() {
         requestAnimationFrame(gameLoop);
     }
 }
-
