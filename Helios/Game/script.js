@@ -2,8 +2,8 @@ const canvas = document.getElementById("background");
 const ctx = canvas.getContext('2d');
 
 // --- Scaling and Alignment Variables ---
-let drawWidth, drawHeight, offsetX, offsetY;
-const pathPadding = 0.12; // Adjust this if the lanes feel slightly off-center
+let drawWidth, drawHeight, offsetX;
+const pathPadding = 0.12; 
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -15,22 +15,12 @@ function updateScaling() {
     if (!pathimage.complete) return;
     
     const imgRatio = pathimage.width / pathimage.height;
-    const canvasRatio = canvas.width / canvas.height;
-
-    // This logic ensures the image fits WITHIN the screen (Letterboxing)
-    if (canvasRatio > imgRatio) {
-        // Screen is wider than the image (Desktop/Tablet)
-        drawHeight = canvas.height;
-        drawWidth = canvas.height * imgRatio;
-        offsetX = (canvas.width - drawWidth) / 2;
-        offsetY = 0;
-    } else {
-        // Screen is taller than the image (Most Phones)
-        drawWidth = canvas.width;
-        drawHeight = canvas.width / imgRatio;
-        offsetX = 0;
-        offsetY = 0; // Keeping it at top, or (canvas.height - drawHeight)/2 to center
-    }
+    
+    // On mobile, we force the width to match the screen
+    // On desktop, we center it
+    drawWidth = Math.min(canvas.width, canvas.height * imgRatio);
+    drawHeight = drawWidth / imgRatio;
+    offsetX = (canvas.width - drawWidth) / 2;
 }
 
 window.addEventListener('resize', resize);
@@ -59,7 +49,7 @@ const player = {
     lane: 1,
     x: 0,
     y: 0,
-    width: 60,  // Slightly smaller to fit mobile screens better
+    width: 60,
     height: 95
 };
 
@@ -68,7 +58,6 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// Controls
 const setupBtn = (id, direction) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -100,7 +89,6 @@ function resetGame() {
     lives = 3;
 }
 
-// --- Dynamic Lane Calculation ---
 function getLaneX(laneIndex, objWidth) {
     const playableWidth = drawWidth * (1 - (pathPadding * 2));
     const pathStart = offsetX + (drawWidth * pathPadding);
@@ -112,7 +100,6 @@ function spawn() {
     spawnTimer++;
     if (spawnTimer > 60) {
         const lane = Math.floor(Math.random() * 3);
-        
         if (Math.random() < 0.7) {
             const x = getLaneX(lane, 60);
             obstacles.push({ x: x, y: -100, width: 60, height: 60 });
@@ -125,19 +112,16 @@ function spawn() {
 }
 
 function update() {
-    // Scroll background relative to its own drawn height
+    // Background scroll
     bgY += gamespeed;
     if (bgY >= drawHeight) bgY = 0;
 
-    // Keep player near bottom of the screen
     player.y = canvas.height - 150;
-    
     let targetX = getLaneX(player.lane, player.width);
-    player.x += (targetX - player.x) * 0.2; // Snappier movement for mobile
+    player.x += (targetX - player.x) * 0.2;
 
     spawn();
 
-    // Obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.y += gamespeed;
@@ -148,7 +132,6 @@ function update() {
         } else if (obs.y > canvas.height) { obstacles.splice(i, 1); }
     }
 
-    // Coins
     for (let i = coins.length - 1; i >= 0; i--) {
         let coin = coins[i];
         coin.y += gamespeed;
@@ -162,12 +145,19 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw scrolling background
-    // We draw it twice to create the infinite loop effect
-    ctx.drawImage(pathimage, offsetX, bgY, drawWidth, drawHeight);
-    ctx.drawImage(pathimage, offsetX, bgY - drawHeight, drawWidth, drawHeight);
+    // --- TILED BACKGROUND DRAWING ---
+    // This loop ensures the entire screen height is covered by the path
+    for (let i = -1; i < Math.ceil(canvas.height / drawHeight) + 1; i++) {
+        ctx.drawImage(
+            pathimage, 
+            offsetX, 
+            bgY + (i * drawHeight), 
+            drawWidth, 
+            drawHeight
+        );
+    }
 
-    // Draw Entities
+    // Entities
     obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
     coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
     ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
