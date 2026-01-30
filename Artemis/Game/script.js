@@ -5,12 +5,13 @@ let w, h, score, arrows, lives, gameActive = false;
 let targets = [];
 let activeArrows = [];
 
-// Image Loading Logic
-let imagesLoaded = 0;
+
 const targetImg = new Image();
 targetImg.src = 'target.png';
 const wolfImg = new Image();
 wolfImg.src = 'wolf.png';
+const bowImg = new Image();
+bowImg.src = 'bow.png'; //
 
 const startBtn = document.getElementById("startBtn");
 
@@ -53,7 +54,7 @@ function spawnTarget() {
         speedX: (2 + Math.random() * 2.5) * direction
     });
 }
-// BULLETPROOF START FUNCTION
+
 function startTheGame() {
     if(imagesLoaded < 2) {
         console.log("Still loading images...");
@@ -66,10 +67,10 @@ function startTheGame() {
     requestAnimationFrame(gameLoop);
 }
 
-// Assign listeners directly to the button element
+
 startBtn.addEventListener("click", startTheGame);
 startBtn.addEventListener("touchstart", (e) => {
-    e.preventDefault(); // Prevents double-firing on some phones
+    e.preventDefault(); 
     startTheGame();
 }, {passive: false});
 
@@ -81,7 +82,7 @@ function shoot(clientX, clientY) {
     activeArrows.push({ x: bowX, y: bowY, angle: angle, speed: 25 });
 }
 
-// Game Input
+
 window.addEventListener("mousedown", (e) => {
     if(gameActive) shoot(e.clientX, e.clientY);
 });
@@ -96,14 +97,21 @@ function gameLoop() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, w, h);
 
-    // Draw Bow Station
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.arc(w/2, h-80, 60, Math.PI, 0); 
-    ctx.stroke();
+    const bowX = w / 2;
+    const bowY = h - 80;
+    
+    let aimAngle = Math.atan2(lastInputY - bowY, lastInputX - bowX);
+    
+    ctx.save();
+    ctx.translate(bowX, bowY);
+    ctx.rotate(aimAngle + Math.PI / 2); 
+    try {
 
-    // Targets Logic
+        ctx.drawImage(bowImg, -40, -40, 80, 80); 
+    } catch(e) {}
+    ctx.restore();
+
+
     for (let i = targets.length - 1; i >= 0; i--) {
         let t = targets[i];
         t.x += t.speedX;
@@ -112,13 +120,13 @@ function gameLoop() {
         if (t.x < -100) t.x = w + 100;
 
         const img = t.isWolf ? wolfImg : targetImg;
-        // Use drawImage safely
+
         try {
             ctx.drawImage(img, t.x - t.radius, t.y - t.radius, t.radius*2, t.radius*2);
         } catch(e) {}
     }
 
-    // Arrow Logic
+
     for (let i = activeArrows.length - 1; i >= 0; i--) {
         let a = activeArrows[i];
         a.x += Math.cos(a.angle) * a.speed;
