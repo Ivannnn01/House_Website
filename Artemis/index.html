@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Artemis 25-26</title>
+    <link rel="stylesheet" href="style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+	<div class="solar-overlay">
+		<div class="fire-sparks">
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+		</div>
+
+		<div class="helios-content">
+			<div class="typewriter">
+				<h1>WELCOME TO</h1>
+			</div>
+			<img src="artemis_logo.png" id="main-logo" class="helios-logo" alt="Helios Logo">
+			<img src="artemis_name.png" class="helios-letters" alt="Helios Letters">
+			<div id="portal-buttons">
+				<a href="gallery/" class="solar-btn">GALLERY</a>
+				<a href="game/" class="solar-btn">PLAY GAME</a>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const logo = document.getElementById('main-logo');
+			const buttonContainer = document.getElementById('portal-buttons');
+			if (logo) {
+				logo.onclick = function() {
+					buttonContainer.classList.add('show');
+					logo.style.filter = "drop-shadow(0 0 50px #1f5a48) brightness(1.3)";
+				};
+			}
+		});
+	</script>
+</body>
+</html>
