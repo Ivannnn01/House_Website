@@ -30,6 +30,7 @@ obstacleImg.src = "Storm_Cloud.png";
 const coinImg = new Image();
 coinImg.src = "Solar_Coin.png";
 
+// --- Game State ---
 let baseSpeed = 400; 
 let gamespeed = 400; 
 let bgY = 0;
@@ -45,8 +46,8 @@ const player = {
     lane: 1,
     x: 0,
     y: 0,
-    width: 70,
-    height: 120
+    width: 80, // Set your desired width here
+    height: 0  // Calculated automatically to prevent compression
 };
 
 function movePlayer(direction) {
@@ -54,7 +55,7 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-
+// --- CLEAN INPUT LOGIC (NO BUTTONS) ---
 let touchStartX = 0;
 window.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
@@ -67,7 +68,7 @@ window.addEventListener("touchend", (e) => {
         if (diff > 0) movePlayer("right");
         else movePlayer("left");
     }
-    e.preventDefault();
+    e.preventDefault(); 
 }, { passive: false });
 
 window.oncontextmenu = (e) => { e.preventDefault(); return false; };
@@ -77,12 +78,9 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") movePlayer("right");
 });
 
-// --- REFINED COLLISION LOGIC ---
+// --- COLLISION ---
 function checkCollision(playerRect, objRect, isObstacle) {
-    // If it's an obstacle, we shrink the hitbox by 15 pixels on all sides
-    // This makes the "Storm Cloud" feel like you actually have to touch the center
     const padding = isObstacle ? 15 : 0; 
-    
     return playerRect.x < (objRect.x + objRect.width - padding) &&
            (playerRect.x + playerRect.width) > (objRect.x + padding) &&
            playerRect.y < (objRect.y + objRect.height - padding) &&
@@ -108,7 +106,6 @@ function getLaneX(laneIndex, objWidth) {
 
 function spawn(dt) {
     spawnTimer += dt;
-    // Spawning frequency also slightly increases as speed increases
     const spawnRate = Math.max(0.4, 1.0 - (score / 500)); 
     if (spawnTimer > spawnRate) {
         const lane = Math.floor(Math.random() * 3);
@@ -124,16 +121,19 @@ function spawn(dt) {
 }
 
 function update(dt) {
-    // Check for speed boost every 50 points
+    // Prevent compression by calculating height based on image ratio
+    if (chariotImg.width > 0) {
+        player.height = player.width * (chariotImg.height / chariotImg.width);
+    }
+
     let currentMilestone = Math.floor(score / 50);
     if (currentMilestone > lastMilestone) {
-        gamespeed *= 1.10; // Add 10%
+        gamespeed *= 1.10;
         lastMilestone = currentMilestone;
-        console.log("Speed increased! New Speed:", gamespeed);
     }
 
     bgY = (bgY + gamespeed * dt) % drawHeight;
-    player.y = canvas.height - 150;
+    player.y = canvas.height - (player.height + 50); 
     let targetX = getLaneX(player.lane, player.width);
     player.x += (targetX - player.x) * 0.15;
 
@@ -170,12 +170,11 @@ function draw() {
     coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
     ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
 
+    // UI
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
     ctx.fillText("Score: " + score, 20, 40);
     ctx.fillText("Lives: " + lives, 20, 70);
-    ctx.font = "14px Arial";
-    ctx.fillText("Speed: " + Math.round((gamespeed / baseSpeed) * 100) + "%", 20, 100);
 }
 
 function gameLoop(timestamp) {
@@ -194,4 +193,3 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
-
