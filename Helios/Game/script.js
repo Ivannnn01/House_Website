@@ -51,37 +51,30 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- FULLY SANITIZED BUTTON LOGIC ---
-const setupBtn = (id, direction) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    
-    // Block the long-press context menu
-    el.oncontextmenu = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    };
+// --- NEW SWIPE LOGIC ---
+let touchStartX = 0;
+const minSwipeDistance = 30; // pixels needed to trigger a move
 
-    const handleAction = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        movePlayer(direction);
-    };
+window.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+}, { passive: false });
 
-    // Use only touchstart for mobile, mousedown for desktop
-    el.addEventListener("touchstart", handleAction, {passive: false});
-    el.addEventListener("mousedown", (e) => {
-        // Only trigger if it's not a touch event (prevents double fire)
-        if (e.detail !== 0) { 
-            handleAction(e);
-        }
-    });
-};
+window.addEventListener("touchend", (e) => {
+    let touchEndX = e.changedTouches[0].screenX;
+    let distance = touchEndX - touchStartX;
 
-setupBtn("leftBtn", "left");
-setupBtn("rightBtn", "right");
+    if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0) movePlayer("right");
+        else movePlayer("left");
+    }
+}, { passive: false });
 
+// Prevent scrolling/bouncing while playing
+window.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+}, { passive: false });
+
+// Keep keyboard support for desktop
 window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") movePlayer("left");
     if (e.key === "ArrowRight") movePlayer("right");
@@ -126,9 +119,7 @@ function spawn() {
 }
 
 function update() {
-    // Increment bgY and wrap it within the drawHeight bounds
     bgY = (bgY + gamespeed) % drawHeight;
-
     player.y = canvas.height - 150;
     let targetX = getLaneX(player.lane, player.width);
     player.x += (targetX - player.x) * 0.2;
@@ -141,7 +132,10 @@ function update() {
         if (checkCollision(player, obs)) {
             lives--;
             obstacles.splice(i, 1);
-            if (lives <= 0) { alert("Game Over! Score: " + score); resetGame(); }
+            if (lives <= 0) { 
+                alert("Game Over! Score: " + score); 
+                resetGame(); 
+            }
         } else if (obs.y > canvas.height) { obstacles.splice(i, 1); }
     }
 
@@ -157,8 +151,6 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Calculate how many tiles we need to fill the height plus overhead
     const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
 
     for (let i = -1; i < tilesNeeded; i++) {
