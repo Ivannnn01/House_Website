@@ -30,12 +30,11 @@ obstacleImg.src = "Storm_Cloud.png";
 const coinImg = new Image();
 coinImg.src = "Solar_Coin.png";
 
-// --- Game State ---
 let baseSpeed = 400; 
 let gamespeed = 400; 
 let bgY = 0;
 let score = 0;
-let lastMilestone = 0; // Tracks the last 50-point boost
+let lastMilestone = 0;
 let obstacles = [];
 let coins = [];
 let spawnTimer = 0;
@@ -46,8 +45,8 @@ const player = {
     lane: 1,
     x: 0,
     y: 0,
-    width: 60,
-    height: 95
+    width: 70,
+    height: 120
 };
 
 function movePlayer(direction) {
@@ -55,7 +54,7 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
-// --- INPUT LOGIC ---
+
 let touchStartX = 0;
 window.addEventListener("touchstart", (e) => {
     touchStartX = e.changedTouches[0].screenX;
@@ -195,3 +194,4 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
