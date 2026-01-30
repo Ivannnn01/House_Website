@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Athena 25-26</title>
+    <link rel="stylesheet" href="style.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+	<div class="solar-overlay">
+		<div class="fire-sparks">
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+			<div class="spark"></div>
+		</div>
+
+		<div class="helios-content">
+			<div class="typewriter">
+				<h1>WELCOME TO</h1>
+			</div>
+
+			<img src="athena_logo.png" id="main-logo" class="helios-logo" alt="Helios Logo">
+
+			<img src="athena_name.png" class="helios-letters" alt="Helios Letters">
+
+			<div id="portal-buttons">
+				<a href="gallery/" class="solar-btn">GALLERY</a>
+				<a href="game/" class="solar-btn">PLAY GAME</a>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const logo = document.getElementById('main-logo');
+			const buttonContainer = document.getElementById('portal-buttons');
+
+			if (logo) {
+				logo.onclick = function() {
+					console.log("Logo was clicked!");
+					buttonContainer.classList.add('show');
+					logo.style.filter = "drop-shadow(0 0 50px #FF4500) brightness(1.3)";
+				};
+			} else {
+				console.error("Could not find the logo ID! Check your HTML.");
+			}
+		});
+	</script>
+</body>
+</html>
