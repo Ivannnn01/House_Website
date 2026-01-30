@@ -13,11 +13,7 @@ function resize() {
 
 function updateScaling() {
     if (!pathimage.complete) return;
-    
     const imgRatio = pathimage.width / pathimage.height;
-    
-    // On mobile, we force the width to match the screen
-    // On desktop, we center it
     drawWidth = Math.min(canvas.width, canvas.height * imgRatio);
     drawHeight = drawWidth / imgRatio;
     offsetX = (canvas.width - drawWidth) / 2;
@@ -27,13 +23,10 @@ window.addEventListener('resize', resize);
 
 const pathimage = new Image();
 pathimage.src = "Cloud_Path.png";
-
 const chariotImg = new Image();
 chariotImg.src = "Chariot.png";
-
 const obstacleImg = new Image();
 obstacleImg.src = "Storm_Cloud.png";
-
 const coinImg = new Image();
 coinImg.src = "Solar_Coin.png";
 
@@ -58,11 +51,19 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
+// --- FIXED BUTTON LOGIC ---
 const setupBtn = (id, direction) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer(direction); });
-    el.addEventListener("mousedown", (e) => { e.preventDefault(); movePlayer(direction); });
+    
+    const handleAction = (e) => {
+        e.preventDefault(); // Stops the "double trigger" on mobile
+        e.stopPropagation();
+        movePlayer(direction);
+    };
+
+    el.addEventListener("touchstart", handleAction, {passive: false});
+    el.addEventListener("mousedown", handleAction);
 };
 
 setupBtn("leftBtn", "left");
@@ -112,7 +113,6 @@ function spawn() {
 }
 
 function update() {
-    // Background scroll
     bgY += gamespeed;
     if (bgY >= drawHeight) bgY = 0;
 
@@ -145,24 +145,21 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // --- TILED BACKGROUND DRAWING ---
-    // This loop ensures the entire screen height is covered by the path
+    // --- TILED BACKGROUND WITH OVERLAP FIX ---
     for (let i = -1; i < Math.ceil(canvas.height / drawHeight) + 1; i++) {
         ctx.drawImage(
             pathimage, 
             offsetX, 
-            bgY + (i * drawHeight), 
+            Math.floor(bgY + (i * drawHeight)), // Math.floor helps with sub-pixel jitter
             drawWidth, 
-            drawHeight
+            drawHeight + 1 // +1 creates a tiny overlap to hide the seam
         );
     }
 
-    // Entities
     obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
     coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
     ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
 
-    // UI
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
     ctx.fillText("Score: " + score, 20, 40);
