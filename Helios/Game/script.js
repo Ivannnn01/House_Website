@@ -1,8 +1,9 @@
 const canvas = document.getElementById("background");
 const ctx = canvas.getContext('2d');
 
-// --- Global Scaling Variables ---
-let drawWidth, drawHeight, offsetX;
+// --- Scaling and Alignment Variables ---
+let drawWidth, drawHeight, offsetX, offsetY;
+const pathPadding = 0.12; // Adjust this if the lanes feel slightly off-center
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -12,17 +13,23 @@ function resize() {
 
 function updateScaling() {
     if (!pathimage.complete) return;
+    
     const imgRatio = pathimage.width / pathimage.height;
     const canvasRatio = canvas.width / canvas.height;
 
+    // This logic ensures the image fits WITHIN the screen (Letterboxing)
     if (canvasRatio > imgRatio) {
+        // Screen is wider than the image (Desktop/Tablet)
+        drawHeight = canvas.height;
+        drawWidth = canvas.height * imgRatio;
+        offsetX = (canvas.width - drawWidth) / 2;
+        offsetY = 0;
+    } else {
+        // Screen is taller than the image (Most Phones)
         drawWidth = canvas.width;
         drawHeight = canvas.width / imgRatio;
         offsetX = 0;
-    } else {
-        drawWidth = canvas.height * imgRatio;
-        drawHeight = canvas.height;
-        offsetX = (canvas.width - drawWidth) / 2;
+        offsetY = 0; // Keeping it at top, or (canvas.height - drawHeight)/2 to center
     }
 }
 
@@ -52,15 +59,8 @@ const player = {
     lane: 1,
     x: 0,
     y: 0,
-    width: 70,
-    height: 110
-};
-
-const setupBtn = (id, direction) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer(direction); });
-    el.addEventListener("mousedown", () => movePlayer(direction));
+    width: 60,  // Slightly smaller to fit mobile screens better
+    height: 95
 };
 
 function movePlayer(direction) {
@@ -68,8 +68,17 @@ function movePlayer(direction) {
     if (direction === "right" && player.lane < 2) player.lane++;
 }
 
+// Controls
+const setupBtn = (id, direction) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("touchstart", (e) => { e.preventDefault(); movePlayer(direction); });
+    el.addEventListener("mousedown", (e) => { e.preventDefault(); movePlayer(direction); });
+};
+
 setupBtn("leftBtn", "left");
 setupBtn("rightBtn", "right");
+
 window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") movePlayer("left");
     if (e.key === "ArrowRight") movePlayer("right");
@@ -91,59 +100,62 @@ function resetGame() {
     lives = 3;
 }
 
+// --- Dynamic Lane Calculation ---
+function getLaneX(laneIndex, objWidth) {
+    const playableWidth = drawWidth * (1 - (pathPadding * 2));
+    const pathStart = offsetX + (drawWidth * pathPadding);
+    const laneWidth = playableWidth / 3;
+    return pathStart + (laneIndex * laneWidth) + (laneWidth / 2) - (objWidth / 2);
+}
+
 function spawn() {
     spawnTimer++;
     if (spawnTimer > 60) {
         const lane = Math.floor(Math.random() * 3);
-        const laneWidth = drawWidth / 3; // Use drawWidth, not canvas.width
-        const xPos = offsetX + (lane * laneWidth) + (laneWidth / 2); // Add offsetX
-
+        
         if (Math.random() < 0.7) {
-            obstacles.push({ x: xPos - 35, y: -100, width: 70, height: 70 });
+            const x = getLaneX(lane, 60);
+            obstacles.push({ x: x, y: -100, width: 60, height: 60 });
         } else {
-            coins.push({ x: xPos - 20, y: -100, width: 40, height: 40 });
+            const x = getLaneX(lane, 35);
+            coins.push({ x: x, y: -100, width: 35, height: 35 });
         }
         spawnTimer = 0;
     }
 }
 
 function update() {
+    // Scroll background relative to its own drawn height
     bgY += gamespeed;
     if (bgY >= drawHeight) bgY = 0;
 
-    player.y = canvas.height - 180;
-    let laneWidth = drawWidth / 3;
-    let targetX = offsetX + (player.lane * laneWidth) + (laneWidth / 2) - (player.width / 2);
-    player.x += (targetX - player.x) * 0.15;
+    // Keep player near bottom of the screen
+    player.y = canvas.height - 150;
+    
+    let targetX = getLaneX(player.lane, player.width);
+    player.x += (targetX - player.x) * 0.2; // Snappier movement for mobile
 
     spawn();
 
+    // Obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.y += gamespeed;
-
         if (checkCollision(player, obs)) {
             lives--;
             obstacles.splice(i, 1);
-            if (lives <= 0) {
-                alert("Crashed! Score: " + score);
-                resetGame();
-            }
-        } else if (obs.y > canvas.height) {
-            obstacles.splice(i, 1);
-        }
+            if (lives <= 0) { alert("Game Over! Score: " + score); resetGame(); }
+        } else if (obs.y > canvas.height) { obstacles.splice(i, 1); }
     }
 
+    // Coins
     for (let i = coins.length - 1; i >= 0; i--) {
         let coin = coins[i];
         coin.y += gamespeed;
-
         if (checkCollision(player, coin)) {
             score += 10;
             coins.splice(i, 1);
-        } else if (coin.y > canvas.height) {
-            coins.splice(i, 1);
-        }
+        } else if (coin.y > canvas.height) { coins.splice(i, 1); }
     }
 }
 
@@ -151,6 +163,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw scrolling background
+    // We draw it twice to create the infinite loop effect
     ctx.drawImage(pathimage, offsetX, bgY, drawWidth, drawHeight);
     ctx.drawImage(pathimage, offsetX, bgY - drawHeight, drawWidth, drawHeight);
 
@@ -159,9 +172,9 @@ function draw() {
     coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
     ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
 
-    // Draw UI
+    // UI
     ctx.fillStyle = "white";
-    ctx.font = "bold 24px Arial";
+    ctx.font = "bold 20px Arial";
     ctx.fillText("Score: " + score, 20, 40);
     ctx.fillText("Lives: " + lives, 20, 70);
 }
@@ -173,6 +186,6 @@ function gameLoop() {
 }
 
 pathimage.onload = () => {
-    resize(); // This calls updateScaling
+    resize();
     gameLoop();
 };
