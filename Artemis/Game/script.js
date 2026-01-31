@@ -94,9 +94,8 @@ startBtn.addEventListener("click", startTheGame);
 function shoot(clientX, clientY) {
     if (!gameActive || arrows <= 0) return;
     
-
-    arrows--; 
-    updateUI();
+    // FIX 2: Removed arrows-- from here. 
+    // It will now only decrease in the game loop if the arrow misses.
 
     const bowX = w / 2;
     const bowY = h - 80;
@@ -111,8 +110,8 @@ window.addEventListener("mousemove", (e) => {
 });
 
 window.addEventListener("mousedown", (e) => {
+    if (e.detail === 0) return; 
     if(gameActive) shoot(e.clientX, e.clientY);
-    e.preventDefault();
 });
 
 window.addEventListener("touchstart", (e) => {
@@ -121,6 +120,7 @@ window.addEventListener("touchstart", (e) => {
     if(gameActive) {
         shoot(lastInputX, lastInputY);
     }
+    if (e.cancelable) e.preventDefault();
 }, {passive: false});
 
 window.addEventListener("touchmove", (e) => {
@@ -195,9 +195,9 @@ function gameLoop() {
                 break;
             }
         }
-
-
         if (!hit && (a.x > w || a.x < 0 || a.y < 0 || a.y > h)) {
+            arrows--;
+            updateUI();
             activeArrows.splice(i, 1);
         }
     }
