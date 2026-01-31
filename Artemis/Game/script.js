@@ -5,7 +5,6 @@ let w, h, score, arrows, lives, gameActive = false;
 let targets = [];
 let activeArrows = [];
 
-
 let lastInputX = window.innerWidth / 2;
 let lastInputY = 0;
 
@@ -78,7 +77,9 @@ function spawnTarget() {
     });
 }
 
-function startTheGame() {
+function startTheGame(e) {
+    if(e) e.stopPropagation(); 
+    
     if(imagesLoaded < totalImages) {
         console.log("Still loading images...");
         return;
@@ -89,20 +90,17 @@ function startTheGame() {
     requestAnimationFrame(gameLoop);
 }
 
+// Button listener remains simple
 startBtn.addEventListener("click", startTheGame);
 
 function shoot(clientX, clientY) {
     if (!gameActive || arrows <= 0) return;
     
-    // FIX 2: Removed arrows-- from here. 
-    // It will now only decrease in the game loop if the arrow misses.
-
     const bowX = w / 2;
     const bowY = h - 80;
     const angle = Math.atan2(clientY - bowY, clientX - bowX);
     activeArrows.push({ x: bowX, y: bowY, angle: angle, speed: 25 });
 }
-
 
 window.addEventListener("mousemove", (e) => {
     lastInputX = e.clientX;
@@ -110,17 +108,18 @@ window.addEventListener("mousemove", (e) => {
 });
 
 window.addEventListener("mousedown", (e) => {
-    if (e.detail === 0) return; 
-    if(gameActive) shoot(e.clientX, e.clientY);
+    if(!gameActive) return;
+    shoot(e.clientX, e.clientY);
 });
 
 window.addEventListener("touchstart", (e) => {
     lastInputX = e.touches[0].clientX;
     lastInputY = e.touches[0].clientY;
+    
     if(gameActive) {
         shoot(lastInputX, lastInputY);
+        if(e.cancelable) e.preventDefault();
     }
-    if (e.cancelable) e.preventDefault();
 }, {passive: false});
 
 window.addEventListener("touchmove", (e) => {
@@ -137,10 +136,8 @@ function gameLoop() {
     const bowX = w / 2;
     const bowY = h - 80;
     
-
     let aimAngle = Math.atan2(lastInputY - bowY, lastInputX - bowX);
     
-
     ctx.save();
     ctx.translate(bowX, bowY);
     ctx.rotate(aimAngle + Math.PI / 2); 
@@ -161,7 +158,6 @@ function gameLoop() {
             ctx.drawImage(img, t.x - t.radius, t.y - t.radius, t.radius*2, t.radius*2);
         } catch(e) {}
     }
-
 
     for (let i = activeArrows.length - 1; i >= 0; i--) {
         let a = activeArrows[i];
@@ -195,13 +191,13 @@ function gameLoop() {
                 break;
             }
         }
+
         if (!hit && (a.x > w || a.x < 0 || a.y < 0 || a.y > h)) {
             arrows--;
             updateUI();
             activeArrows.splice(i, 1);
         }
     }
-
 
     if (lives <= 0 || (arrows <= 0 && activeArrows.length === 0)) {
         gameActive = false;
