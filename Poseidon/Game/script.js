@@ -9,7 +9,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let score, lives, gameOver = true, speedMult, shieldAngle, charges, isFullShield;
-let projectiles = [], keys = {};
+let projectiles = [], keys = {}, spawnTimer;
 
 const shieldRadius = 130, shieldWidth = 1.2, rotSpd = 0.08;
 const centerX = canvas.width / 2, centerY = canvas.height / 2;
@@ -18,6 +18,7 @@ const imgP = new Image(); imgP.src = "Poseidon.png";
 const imgS = new Image(); imgS.src = "shark.png";
 
 window.addEventListener('keydown', (e) => {
+    if (keys[e.code]) return; 
     keys[e.code] = true;
     if (e.code === 'Space') activateFullShield();
 });
@@ -36,14 +37,17 @@ function bind(id, key, callback) {
     const el = document.getElementById(id);
     if(!el) return;
 
-    const start = (e) => { 
-        e.preventDefault(); 
-        if(callback) callback(); 
-        if(key) keys[key] = true; 
-    };
-    const stop = (e) => { 
+    const start = (e) => {
         e.preventDefault();
-        if(key) keys[key] = false; 
+        e.stopPropagation();
+        if (key && keys[key]) return; 
+        if (callback) callback();
+        if (key) keys[key] = true;
+    };
+    
+    const stop = (e) => {
+        e.preventDefault();
+        if (key) keys[key] = false;
     };
 
     el.addEventListener('touchstart', start, {passive: false});
@@ -58,12 +62,14 @@ bind('rBtn', 'ArrowRight');
 bind('shieldBtn', null, activateFullShield);
 
 document.getElementById('startBtn').onclick = () => {
+    if (!gameOver) return;
     score = 0; lives = 3; charges = 3; speedMult = 1;
     projectiles = [];
     scoreDisp.innerText = 0; livesDisp.innerText = 3; chargesDisp.innerText = 3;
     shieldAngle = 0;
     gameOver = false;
     menu.style.display = 'none';
+    clearTimeout(spawnTimer);
     spawn();
 };
 
@@ -76,7 +82,7 @@ function spawn() {
         y: centerY + Math.sin(a) * d, 
         spd: (3 + Math.random() * 2) * speedMult 
     });
-    setTimeout(spawn, Math.max(400, 1500 - score * 5));
+    spawnTimer = setTimeout(spawn, Math.max(400, 1500 - score * 5));
 }
 
 function update() {
