@@ -8,7 +8,29 @@
     align-items: center;
     padding: 0 10px;
     pointer-events: none;
-  
+
+body { margin: 0; 
+      background: #1f3e6c; 
+      overflow: hidden; 
+      color: white; 
+      font-family: sans-serif; 
+}
+canvas { 
+    display: block; 
+}
+#ui { 
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    pointer-events: none;
+}
+#menu { 
+    position: absolute; 
+    width: 100%; 
+    top: 40%; 
+    text-align: center; 
+    z-index: 10; 
+}
 
 .game-btn {
     pointer-events: auto;
