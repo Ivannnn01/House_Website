@@ -97,7 +97,6 @@ function resetGame() {
     coins = [];
     player.lane = 1;
     lives = 3;
-    startMenu.style.display = "block";
 }
 
 function getLaneX(laneIndex, objWidth) {
@@ -167,17 +166,15 @@ function draw() {
     for (let i = -1; i < tilesNeeded; i++) {
         ctx.drawImage(pathimage, offsetX, Math.floor(bgY + (i * drawHeight)), drawWidth, drawHeight + 1);
     }
-    if (gameActive){
-        obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
-        coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
-        ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
+    obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
+    coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
+    ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
 
-    
-        ctx.fillStyle = "white";
-        ctx.font = "bold 20px Arial";
-        ctx.fillText("Score: " + score, 20, 40);
-        ctx.fillText("Lives: " + lives, 20, 70);
-    }
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px Arial";
+    ctx.fillText("Score: " + score, 20, 40);
+    ctx.fillText("Lives: " + lives, 20, 70);
 }
 
 function gameLoop(timestamp) {
@@ -197,9 +194,5 @@ pathimage.onload = () => {
     });
 };
 
-startBtn.addEventListener("click", () => {
-    startMenu.style.display = "none";
-    gameActive = true;
-});
 
 
