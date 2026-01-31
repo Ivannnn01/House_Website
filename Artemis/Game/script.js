@@ -5,12 +5,12 @@ let w, h, score, arrows, lives, gameActive = false;
 let targets = [];
 let activeArrows = [];
 
-// MISSING VARIABLES FIXED: Track last input for bow rotation
+
 let lastInputX = window.innerWidth / 2;
 let lastInputY = 0;
 
 let imagesLoaded = 0;
-const totalImages = 3; // target, wolf, bow
+const totalImages = 3;
 
 const checkImages = () => {
     imagesLoaded++;
@@ -112,6 +112,7 @@ window.addEventListener("mousemove", (e) => {
 
 window.addEventListener("mousedown", (e) => {
     if(gameActive) shoot(e.clientX, e.clientY);
+    e.preventDefault();
 });
 
 window.addEventListener("touchstart", (e) => {
