@@ -9,9 +9,9 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let score, lives, gameOver = true, speedMult, shieldAngle, charges, isFullShield;
-let projectiles = [], keys = {}, spawnTimer;
+let projectiles = [], keys = {}, spawnTimer, lastTime = 0;
 
-const shieldRadius = 130, shieldWidth = 1.2, rotSpd = 0.08;
+const shieldRadius = 130, shieldWidth = 1.2, rotSpd = 5.0; 
 const centerX = canvas.width / 2, centerY = canvas.height / 2;
 
 const imgP = new Image(); imgP.src = "Poseidon.png";
@@ -35,26 +35,15 @@ function activateFullShield() {
 function bind(id, key, callback) {
     const el = document.getElementById(id);
     if(!el) return;
-
-    const start = (e) => {
-        if (e.cancelable) e.preventDefault();
+    el.style.touchAction = 'none'; 
+    el.addEventListener('pointerdown', (e) => {
         if (key) keys[key] = true;
-        if (callback && (e.type === 'touchstart' || e.type === 'mousedown')) {
-            if (e.type === 'mousedown' && 'ontouchstart' in window) return;
-            callback();
-        }
-    };
-    
-    const stop = (e) => {
-        if (e.cancelable) e.preventDefault();
-        if (key) keys[key] = false;
-    };
-
-    el.addEventListener('touchstart', start, {passive: false});
-    el.addEventListener('touchend', stop, {passive: false});
-    el.addEventListener('mousedown', start);
-    el.addEventListener('mouseup', stop);
-    el.addEventListener('mouseleave', stop);
+        if (callback) callback();
+    });
+    const stop = () => { if (key) keys[key] = false; };
+    el.addEventListener('pointerup', stop);
+    el.addEventListener('pointerleave', stop);
+    el.addEventListener('pointercancel', stop);
 }
 
 bind('lBtn', 'ArrowLeft');
@@ -69,8 +58,10 @@ document.getElementById('startBtn').onclick = () => {
     shieldAngle = 0;
     gameOver = false;
     menu.style.display = 'none';
+    lastTime = performance.now();
     clearTimeout(spawnTimer);
     spawn();
+    requestAnimationFrame(gameLoop);
 };
 
 function spawn() {
@@ -80,25 +71,24 @@ function spawn() {
     projectiles.push({ 
         x: centerX + Math.cos(a) * d, 
         y: centerY + Math.sin(a) * d, 
-        spd: (3 + Math.random() * 2) * speedMult 
+        spd: (180 + Math.random() * 120) * speedMult 
     });
     spawnTimer = setTimeout(spawn, Math.max(400, 1500 - score * 5));
 }
 
-function update() {
+function update(dt) {
     if (gameOver) return;
 
-    if (keys['ArrowLeft']) shieldAngle -= rotSpd;
-    if (keys['ArrowRight']) shieldAngle += rotSpd;
+    if (keys['ArrowLeft']) shieldAngle -= rotSpd * dt;
+    if (keys['ArrowRight']) shieldAngle += rotSpd * dt;
 
     for (let i = projectiles.length - 1; i >= 0; i--) {
         const p = projectiles[i];
-        const prevDist = Math.hypot(centerX - p.x, centerY - p.y);
         const ang = Math.atan2(centerY - p.y, centerX - p.x);
         
-        p.x += Math.cos(ang) * p.spd;
-        p.y += Math.sin(ang) * p.spd;
-
+        const prevDist = Math.hypot(centerX - p.x, centerY - p.y);
+        p.x += Math.cos(ang) * p.spd * dt;
+        p.y += Math.sin(ang) * p.spd * dt;
         const currDist = Math.hypot(centerX - p.x, centerY - p.y);
 
         if (prevDist > shieldRadius && currDist <= shieldRadius) {
@@ -120,16 +110,18 @@ function update() {
             projectiles.splice(i, 1);
             lives--;
             livesDisp.innerText = lives;
-            if (lives <= 0) { 
-                gameOver = true; 
-                menu.style.display = 'block'; 
-            }
+            if (lives <= 0) { gameOver = true; menu.style.display = 'block'; }
         }
     }
 }
 
-function draw() {
-    update();
+function gameLoop(timestamp) {
+    if (gameOver) return;
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    update(dt);
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     ctx.save();
@@ -154,6 +146,5 @@ function draw() {
         ctx.restore();
     });
 
-    requestAnimationFrame(draw);
+    requestAnimationFrame(gameLoop);
 }
-draw();
