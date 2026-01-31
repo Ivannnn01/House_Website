@@ -1,39 +1,56 @@
 #controls {
     position: fixed;
-    bottom: 20px;
+    bottom: 40px;
     left: 0;
     right: 0;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
-    padding: 0 10px;
     pointer-events: none;
+    z-index: 10;
+}
 
 .game-btn {
     pointer-events: auto;
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 3px solid #00f2ff;
+    width: 90px;
+    height: 90px;
+    background: rgba(15, 15, 15, 0.8);
+    border: 2px solid rgba(0, 242, 255, 0.5);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
+    color: #00f2ff;
+    font-family: sans-serif;
     font-weight: bold;
+    font-size: 14px;
+    
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
+    
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
+    transition: transform 0.1s, box-shadow 0.1s;
     touch-action: none;
 }
 
 #shieldBtn {
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 215, 0, 0.3);
-    border-color: gold;
-    font-size: 1.2rem;
+    width: 110px;
+    height: 110px;
+    color: gold;
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(255, 215, 0, 0.1);
+    font-size: 16px;
 }
+
 .game-btn:active {
-    transform: scale(0.9);
-    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.85);
+    box-shadow: 0 0 5px rgba(0, 242, 255, 0.5);
+    background: rgba(0, 242, 255, 0.2);
+}
+
+#shieldBtn:active {
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    background: rgba(255, 215, 0, 0.2);
 }
