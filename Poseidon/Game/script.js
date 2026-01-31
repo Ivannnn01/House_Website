@@ -35,12 +35,22 @@ function activateFullShield() {
 function bind(id, key, callback) {
     const el = document.getElementById(id);
     if(!el) return;
-    const start = (e) => { e.preventDefault(); callback ? callback() : keys[key] = true; };
-    const stop = () => { if(key) keys[key] = false; };
+
+    const start = (e) => { 
+        e.preventDefault(); 
+        if(callback) callback(); 
+        if(key) keys[key] = true; 
+    };
+    const stop = (e) => { 
+        e.preventDefault();
+        if(key) keys[key] = false; 
+    };
+
+    el.addEventListener('touchstart', start, {passive: false});
+    el.addEventListener('touchend', stop, {passive: false});
     el.addEventListener('mousedown', start);
-    el.addEventListener('touchstart', start);
     el.addEventListener('mouseup', stop);
-    el.addEventListener('touchend', stop);
+    el.addEventListener('mouseleave', stop);
 }
 
 bind('lBtn', 'ArrowLeft');
@@ -74,7 +84,8 @@ function update() {
     if (keys['ArrowLeft']) shieldAngle -= rotSpd;
     if (keys['ArrowRight']) shieldAngle += rotSpd;
 
-    projectiles.forEach((p, i) => {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
         const prevDist = Math.hypot(centerX - p.x, centerY - p.y);
         const ang = Math.atan2(centerY - p.y, centerX - p.x);
         
@@ -94,11 +105,11 @@ function update() {
                 score += 10;
                 scoreDisp.innerText = score;
                 if (score % 50 === 0) speedMult *= 1.05;
-                return;
+                continue;
             }
         }
 
-        if (currDist < 50) {
+        if (currDist < 60) {
             projectiles.splice(i, 1);
             lives--;
             livesDisp.innerText = lives;
@@ -107,10 +118,11 @@ function update() {
                 menu.style.display = 'block'; 
             }
         }
-    });
+    }
 }
 
 function draw() {
+    update();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     ctx.save();
@@ -135,7 +147,6 @@ function draw() {
         ctx.restore();
     });
 
-    update();
     requestAnimationFrame(draw);
 }
 draw();
