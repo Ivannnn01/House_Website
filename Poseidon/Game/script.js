@@ -17,7 +17,6 @@ const centerX = canvas.width / 2, centerY = canvas.height / 2;
 const imgP = new Image(); imgP.src = "Poseidon.png";
 const imgS = new Image(); imgS.src = "shark.png";
 
-// Keyboard Listeners
 window.addEventListener('keydown', (e) => {
     keys[e.code] = true;
     if (e.code === 'Space') activateFullShield();
@@ -33,25 +32,26 @@ function activateFullShield() {
     }
 }
 
-
 function bind(id, key, callback) {
     const el = document.getElementById(id);
     if(!el) return;
 
     const start = (e) => {
-        e.preventDefault();
-        if (callback) callback();
+        if (e.cancelable) e.preventDefault();
         if (key) keys[key] = true;
+        if (callback && (e.type === 'touchstart' || e.type === 'mousedown')) {
+            if (e.type === 'mousedown' && 'ontouchstart' in window) return;
+            callback();
+        }
     };
     
     const stop = (e) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         if (key) keys[key] = false;
     };
 
     el.addEventListener('touchstart', start, {passive: false});
     el.addEventListener('touchend', stop, {passive: false});
-    
     el.addEventListener('mousedown', start);
     el.addEventListener('mouseup', stop);
     el.addEventListener('mouseleave', stop);
