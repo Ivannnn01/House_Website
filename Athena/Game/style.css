@@ -3,10 +3,10 @@ body {
     padding: 0;
     overflow: hidden;
     background-color: #1a252f;
-    touch-action: manipulation;
+    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
 }
 
 #game-container {
@@ -14,6 +14,7 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    background-color: #1a252f;
 }
 
 #bird {
@@ -23,7 +24,7 @@ body {
     width: 44px;
     height: 44px;
     z-index: 10;
-    transition: transform 0.1s;
+    will-change: transform, top;
 }
 
 #bird img {
@@ -32,6 +33,7 @@ body {
     object-fit: contain;
     display: block;
 }
+
 .pipe {
     position: absolute;
     width: 80px;
@@ -39,18 +41,16 @@ body {
     border-left: 6px solid #3e2723;
     border-right: 6px solid #3e2723;
     background-color: #5d4037;
-    
     background-image: 
         linear-gradient(to bottom, #3e2723 0px, #3e2723 5px, transparent 5px, transparent 55px, #3e2723 55px, #3e2723 60px),
         repeating-linear-gradient(to right, 
-            #b71c1c 0px, #b71c1c 12px,
-            #0d47a1 12px, #0d47a1 20px,
-            #1b5e20 20px, #1b5e20 32px,
-            #f57f17 32px, #f57f17 38px,
+            #b71c1c 0px, #b71c1c 12px, 
+            #0d47a1 12px, #0d47a1 20px, 
+            #1b5e20 20px, #1b5e20 32px, 
+            #f57f17 32px, #f57f17 38px, 
             #3e2723 38px, #3e2723 42px
         );
-    background-size: 100% 60px; 
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    background-size: 100% 60px;
 }
 
 .pipe.top {
@@ -90,7 +90,7 @@ body {
     pointer-events: none;
     text-align: center;
     white-space: pre-wrap;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     padding: 20px;
     border-radius: 10px;
 }
