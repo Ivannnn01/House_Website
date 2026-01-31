@@ -17,6 +17,7 @@ const centerX = canvas.width / 2, centerY = canvas.height / 2;
 const imgP = new Image(); imgP.src = "Poseidon.png";
 const imgS = new Image(); imgS.src = "shark.png";
 
+// Keyboard Listeners
 window.addEventListener('keydown', (e) => {
     keys[e.code] = true;
     if (e.code === 'Space') activateFullShield();
@@ -31,6 +32,7 @@ function activateFullShield() {
         setTimeout(() => isFullShield = false, 3000);
     }
 }
+
 
 function bind(id, key, callback) {
     const el = document.getElementById(id);
@@ -49,6 +51,7 @@ function bind(id, key, callback) {
 
     el.addEventListener('touchstart', start, {passive: false});
     el.addEventListener('touchend', stop, {passive: false});
+    
     el.addEventListener('mousedown', start);
     el.addEventListener('mouseup', stop);
     el.addEventListener('mouseleave', stop);
@@ -126,8 +129,7 @@ function update() {
 }
 
 function draw() {
-    if (!gameOver) update();
-
+    update();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     ctx.save();
@@ -136,7 +138,6 @@ function draw() {
     ctx.drawImage(imgP, -75, -75, 150, 150);
     ctx.restore();
 
-    // Draw Shield
     ctx.beginPath();
     ctx.arc(centerX, centerY, shieldRadius, isFullShield ? 0 : shieldAngle - shieldWidth/2, isFullShield ? Math.PI*2 : shieldAngle + shieldWidth/2);
     ctx.strokeStyle = isFullShield ? 'gold' : '#00f2ff';
@@ -155,6 +156,4 @@ function draw() {
 
     requestAnimationFrame(draw);
 }
-
-
 draw();
