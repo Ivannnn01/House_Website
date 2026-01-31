@@ -39,7 +39,7 @@ let coins = [];
 let spawnTimer = 0;
 let lives = 3;
 let lastTime = 0;
-let gameActive = False;
+
 
 const player = {
     lane: 1,
@@ -193,6 +193,7 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
 
 
 
