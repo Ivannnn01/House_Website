@@ -43,56 +43,57 @@ body {
     position: absolute;
     width: 80px;
     box-sizing: border-box;
-    border-left: 6px solid #3d2b1f;
-    border-right: 6px solid #3d2b1f;
+    border-left: 8px solid #3d2b1f;
+    border-right: 8px solid #3d2b1f;
     
     background: 
-        linear-gradient(to bottom, 
-            #2a1b18 0%, #2a1b18 15%, 
-            transparent 15%, transparent 100%
+        linear-gradient(to bottom, #1a110a 20%, transparent 20%, transparent 90%, #1a110a 90%),
+        
+        repeating-linear-gradient(to right,
+            #7f1d1d 0px, #7f1d1d 15px,
+            #2a1b18 15px, #2a1b18 17px,
+            #1e3a8a 17px, #1e3a8a 30px,
+            #2a1b18 30px, #2a1b18 32px,
+            #14532d 32px, #14532d 50px,
+            #2a1b18 50px, #2a1b18 52px,
+            #a16207 52px, #a16207 65px,
+            #2a1b18 65px, #2a1b18 67px 
         ),
-        linear-gradient(to right,
-            #b71c1c 0px, #b71c1c 12px,
-            #3d2b1f 12px, #3d2b1f 14px,
-            #0d47a1 14px, #0d47a1 24px,
-            #3d2b1f 24px, #3d2b1f 26px,
-            #1b5e20 26px, #1b5e20 42px,
-            #3d2b1f 42px, #3d2b1f 44px,
-            #f57f17 44px, #f57f17 52px,
-            #3d2b1f 52px, #3d2b1f 54px
-        ),
-        #5d4037;
-    background-size: 100% 60px, 54px 60px, 100% 100%;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        
+        #4e342e;
+    background-size: 100% 80px, 67px 80px, 100% 100%;
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.7);
 }
-
 .pipe.top::after, .pipe.bottom::after {
     content: '';
     position: absolute;
-    left: -8px;
-    width: calc(100% + 16px);
-    height: 14px;
-    background: #4e342e;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: 16px;
+    background: #3d2b1f;
     border: 2px solid #2a1b18;
-    z-index: 2;
+    border-radius: 2px;
+    z-index: 5;
 }
 
 .pipe.top {
     top: 0;
+    border-bottom: 2px solid #2a1b18;
 }
 
 .pipe.top::after {
-    bottom: -7px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    bottom: -8px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
 }
 
 .pipe.bottom {
     bottom: 0;
+    border-top: 2px solid #2a1b18;
 }
 
 .pipe.bottom::after {
-    top: -7px;
-    box-shadow: 0 -4px 8px rgba(0,0,0,0.4);
+    top: -8px;
+    box-shadow: 0 -5px 10px rgba(0,0,0,0.5);
 }
 
 #score {
@@ -126,6 +127,7 @@ body {
     padding: 20px;
     border-radius: 10px;
 }
+
 
 
 
