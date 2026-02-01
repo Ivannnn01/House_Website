@@ -14,7 +14,13 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: #1a252f;
+    background-color: #0b0214;
+    background-image: 
+        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 20px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    background-position: 0 0, 40px 60px, 130px 270px;
 }
 
 #bird {
@@ -94,3 +100,4 @@ body {
     padding: 20px;
     border-radius: 10px;
 }
+
