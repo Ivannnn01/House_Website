@@ -11,7 +11,7 @@ canvas.height = window.innerHeight;
 let score, lives, gameOver = true, speedMult, shieldAngle, charges, isFullShield;
 let projectiles = [], keys = {}, spawnTimer, lastTime = 0;
 
-const shieldRadius = 160, shieldWidth = 1.2, rotSpd = 5.0; 
+const shieldRadius = 200, shieldWidth = 1.2, rotSpd = 5.0; 
 const centerX = canvas.width / 2, centerY = canvas.height / 2;
 
 const imgP = new Image(); imgP.src = "Poseidon.png";
@@ -106,7 +106,7 @@ function update(dt) {
             }
         }
 
-        if (currDist < 90) {
+        if (currDist < 110) {
             projectiles.splice(i, 1);
             lives--;
             livesDisp.innerText = lives;
@@ -148,4 +148,5 @@ function gameLoop(timestamp) {
 
     requestAnimationFrame(gameLoop);
 }
+
 
