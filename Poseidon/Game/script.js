@@ -11,7 +11,7 @@ canvas.height = window.innerHeight;
 let score, lives, gameOver = true, speedMult, shieldAngle, charges, isFullShield;
 let projectiles = [], keys = {}, spawnTimer, lastTime = 0;
 
-const shieldRadius = 130, shieldWidth = 1.2, rotSpd = 5.0; 
+const shieldRadius = 160, shieldWidth = 1.2, rotSpd = 5.0; 
 const centerX = canvas.width / 2, centerY = canvas.height / 2;
 
 const imgP = new Image(); imgP.src = "Poseidon.png";
@@ -106,7 +106,7 @@ function update(dt) {
             }
         }
 
-        if (currDist < 60) {
+        if (currDist < 90) {
             projectiles.splice(i, 1);
             lives--;
             livesDisp.innerText = lives;
@@ -127,7 +127,7 @@ function gameLoop(timestamp) {
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(shieldAngle - Math.PI/2);
-    ctx.drawImage(imgP, -75, -75, 150, 150);
+    ctx.drawImage(imgP, -100, -100, 200, 200);
     ctx.restore();
 
     ctx.beginPath();
@@ -142,9 +142,10 @@ function gameLoop(timestamp) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(a - Math.PI/2);
-        ctx.drawImage(imgS, -30, -30, 60, 60);
+        ctx.drawImage(imgS, -60, -60, 120, 120);
         ctx.restore();
     });
 
     requestAnimationFrame(gameLoop);
 }
+
