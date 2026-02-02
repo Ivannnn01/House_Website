@@ -11,7 +11,6 @@ function resize() {
 
 function updateScaling() {
     if (!pathimage.complete) return;
-    .
     const totalPlayableWidth = Math.min(canvas.width * 0.9, 600); 
     drawWidth = totalPlayableWidth / 3; 
     
@@ -202,3 +201,4 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
+
