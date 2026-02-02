@@ -2,7 +2,6 @@ const canvas = document.getElementById("background");
 const ctx = canvas.getContext('2d');
 
 let drawWidth, drawHeight, offsetX;
-const pathPadding = 0.12; 
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -12,10 +11,13 @@ function resize() {
 
 function updateScaling() {
     if (!pathimage.complete) return;
+    .
+    const totalPlayableWidth = Math.min(canvas.width * 0.9, 600); 
+    drawWidth = totalPlayableWidth / 3; 
+    
     const imgRatio = pathimage.width / pathimage.height;
-    drawWidth = Math.min(canvas.width, canvas.height * imgRatio);
     drawHeight = drawWidth / imgRatio;
-    offsetX = (canvas.width - drawWidth) / 2;
+    offsetX = (canvas.width - (drawWidth * 3)) / 2;
 }
 
 window.addEventListener('resize', resize);
@@ -40,7 +42,6 @@ let spawnTimer = 0;
 let lives = 3;
 let lastTime = 0;
 
-
 const player = {
     lane: 1,
     x: 0,
@@ -53,7 +54,6 @@ function movePlayer(direction) {
     if (direction === "left" && player.lane > 0) player.lane--;
     if (direction === "right" && player.lane < 2) player.lane++;
 }
-
 
 let touchStartX = 0;
 window.addEventListener("touchstart", (e) => {
@@ -77,10 +77,8 @@ window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") movePlayer("right");
 });
 
-
 function checkCollision(playerRect, objRect, isObstacle) {
     const playerPadding = 40; 
-    
     const objPadding = isObstacle ? 15 : 0; 
     
     return (playerRect.x + playerPadding) < (objRect.x + objRect.width - objPadding) &&
@@ -100,10 +98,8 @@ function resetGame() {
 }
 
 function getLaneX(laneIndex, objWidth) {
-    const playableWidth = drawWidth * (1 - (pathPadding * 2));
-    const pathStart = offsetX + (drawWidth * pathPadding);
-    const laneWidth = playableWidth / 3;
-    return pathStart + (laneIndex * laneWidth) + (laneWidth / 2) - (objWidth / 2);
+    const laneStart = offsetX + (laneIndex * drawWidth);
+    return laneStart + (drawWidth / 2) - (objWidth / 2);
 }
 
 function spawn(dt) {
@@ -133,7 +129,9 @@ function update(dt) {
         lastMilestone = currentMilestone;
     }
 
+
     bgY = (bgY + gamespeed * dt) % drawHeight;
+    
     player.y = canvas.height - (player.height + 50); 
     let targetX = getLaneX(player.lane, player.width);
     player.x += (targetX - player.x) * 0.35;
@@ -162,14 +160,25 @@ function update(dt) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     const tilesNeeded = Math.ceil(canvas.height / drawHeight) + 1;
-    for (let i = -1; i < tilesNeeded; i++) {
-        ctx.drawImage(pathimage, offsetX, Math.floor(bgY + (i * drawHeight)), drawWidth, drawHeight + 1);
+
+    for (let lane = 0; lane < 3; lane++) {
+        const xPos = offsetX + (lane * drawWidth);
+        for (let i = -1; i < tilesNeeded; i++) {
+            ctx.drawImage(
+                pathimage, 
+                xPos, 
+                Math.floor(bgY + (i * drawHeight)), 
+                drawWidth + 1,
+                drawHeight + 1
+            );
+        }
     }
+
     obstacles.forEach(obs => ctx.drawImage(obstacleImg, obs.x, obs.y, obs.width, obs.height));
     coins.forEach(coin => ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height));
     ctx.drawImage(chariotImg, player.x, player.y, player.width, player.height);
-
 
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
@@ -193,7 +202,3 @@ pathimage.onload = () => {
         gameLoop(timestamp);
     });
 };
-
-
-
-
