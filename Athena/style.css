@@ -81,7 +81,6 @@ body {
 .spark::before {
     content: '';
     position: absolute;
-    /* Pokes out from the blunt left side, NOT the sharp right tip */
     left: -12px;
     top: 50%;
     width: 15px;
@@ -174,17 +173,6 @@ body {
     color: #FF4500;
     transform: translateX(-5px);
 }
-
-#portal-buttons {
-    display: flex;
-    gap: 20px;
-    margin-top: 30px;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.5s ease;
-    transform: translateY(20px);
-}
-#portal-buttons.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .solar-btn {
     padding: 12px 25px;
     border: 2px solid #321066;
