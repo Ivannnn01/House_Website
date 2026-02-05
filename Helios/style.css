@@ -79,7 +79,7 @@ body {
     height: 100%;
     top: 0;
     left: 0;
-    pointers-events: none;
+    pointer-events: none;
 }
 
 .spark {
@@ -177,6 +177,7 @@ body {
     letter-spacing: 2px;
     transition: 0.3s;
     box-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
+	z-index: 2px;
 }
 
 .solar-btn:hover {
